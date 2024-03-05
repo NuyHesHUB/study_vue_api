@@ -13,62 +13,40 @@
   </div>
 </template>
 
-<script>
+<script setup>
 
-/* vue3 Compositon API */
-import { onMounted, ref } from 'vue';
-
-/* axios */
 import axios from 'axios';
-
-/* ag-grid-vue */
+import { onMounted, ref } from 'vue';
+import { AgGridVue } from 'ag-grid-vue3';
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { AgGridVue } from "ag-grid-vue3";
 
-export default {
-  name: "App",
-  components: {
-    AgGridVue,
-  },
-
-  setup() {
-    const rowData = ref([]);
-    const colDefs = ref([
+const rowData = ref([]);
+const colDefs = ref([
       { headerName: "개봉년도", field: "year", cellStyle:{"textAlign":"left", 'background-color': '#f1f7ff'}},
       { headerName: "영화제목", field: "title" },
       { headerName: "장르", field: "genres" },
       { headerName: "런타임 (min)", field: "runtime" },
-    ]);
+]);
 
-/* console.log('test', rowData.value.data.movies); */
+const fetchData = async() => {
+  try {
+    const response = await axios.get("https://yts.mx/api/v2/list_movies.json");
+    rowData.value = response.data.data.movies.map(movie => ({
+      title: movie.title,
+      year: movie.year,
+      genres: movie.genres,
+      runtime: movie.runtime
+    }));
+    console.log('test', rowData.value);
+  } catch (error) {
+    console.error('error', error);
+  }
+}
 
-  const fetchData = async() => {
-    try {
-        const response = await axios.get('https://yts.mx/api/v2/list_movies.json'); 
-        rowData.value = response.data.data.movies.map(movie => ({
-          title: movie.title,
-          year: movie.year,
-          genres: movie.genres,
-          runtime: movie.runtime,
-        }));
-        console.log('test', rowData.value);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-  };
-  
-  onMounted(() => {
-    fetchData();
-  });
-  
-  /* console.log('test2',  rowData.value); */
-  return {
-    rowData,
-    colDefs,
-  };
-},
-};
+onMounted(() => {
+  fetchData();
+});
 
 </script>
 
